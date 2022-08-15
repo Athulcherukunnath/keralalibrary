@@ -3,36 +3,36 @@ const logindata = require('./src/Model/logindb')
 const bookdata = require('./src/Model/bookdb')
 const cors = require('cors');
 const path = require('path');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 var bodyparser = require('body-parser');
 var app = new express();
 app.use(cors());
 app.use(bodyparser.json())
 app.use(express.static('./dist/frontend'));
 
-// username="admin";
-// password="1234";
+username="admin";
+password="1234";
 
-// function verifyToken(req,res,next)
-// {
-//   if(!req.headers.authorization)
-//     {
-//       return res.status(401).send('Unauthorized request')
-//     }
-//   let token=req.headers.authorization.split('')[1]
-//   if(token=='null')
-//   {
-//     return res.status(401).send('Unauthorised request')
-//   }
-//   let payload=jwt.verify(token,'secretkey')
-//   console.log(payload)
-//   if(!payload)
-//   {
-//     return res.status(401).send('Unauthorized request')
-//   }
-//   req.userId=payload.subject
-//   next()
-// }
+function verifyToken(req,res,next)
+{
+  if(!req.headers.authorization)
+    {
+      return res.status(401).send('Unauthorized request')
+    }
+  let token=req.headers.authorization.split('')[1]
+  if(token=='null')
+  {
+    return res.status(401).send('Unauthorised request')
+  }
+  let payload=jwt.verify(token,'secretkey')
+  console.log(payload)
+  if(!payload)
+  {
+    return res.status(401).send('Unauthorized request')
+  }
+  req.userId=payload.subject
+  next()
+}
 
 app.get('/api/books',function(req,res){
   bookdata.find()
@@ -41,20 +41,20 @@ app.get('/api/books',function(req,res){
   });
 });
 
-// app.post('/login',(req, res) => {
-//   console.log('inside');
-//   let userData = req.body
-//     if(!username){
-//       res.status(401).send('Invalid Password')
-//     }else
-//       if( password !== userData.password){
-//         res.status(401).send('Invalid Password')
-//       }else{
-//         let payload={subject:username+password}
-//         let token=jwt.sign(payload,'secretkey')
-//         res.status(200).send({token})
-//     }
-// })
+app.post('/api/login',(req, res) => {
+  console.log('inside');
+  let userData = req.body
+    if(!username){
+      res.status(401).send('Invalid Password')
+    }else
+      if( password !== userData.password){
+        res.status(401).send('Invalid Password')
+      }else{
+        let payload={subject:username+password}
+        let token=jwt.sign(payload,'secretkey')
+        res.status(200).send({token})
+    }
+})
 
 app.post('/api/insert',function(req,res){
   console.log(req.body);
@@ -121,11 +121,12 @@ app.put('/api/update',(req,res)=>{
                                 })
 });
 
-app.get('/*', (req, res)=> {
+app.get('/*',function(req, res){
   res.sendFile(path.join(__dirname + './dist/frontend/index.html'));
-  });
+});
 
-var PORT = process.env.PORT || 3006
-app.listen( PORT , function(){
-    console.log('listening to port', PORT);
+var PORT = process.env.PORT || 3006;
+
+app.listen(PORT,function(){
+    console.log(`listening to port ${PORT}`);
   });
